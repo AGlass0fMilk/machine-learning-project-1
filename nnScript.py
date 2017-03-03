@@ -355,8 +355,8 @@ def nnObjFunction(params, *args):
 
     #print(str(Ji))
     #print(str(np.shape(Ji)))
-    print("Objective Function Output: " + str(J))
-    printToFile("Objective Function Output: " + str(J))
+    #print("Objective Function Output: " + str(J))
+    #printToFile("Objective Function Output: " + str(J))
 
     # Now we have to calculate the objective function gradient
     # 1.) Calcualte the derivative of Ji with respect to W2
@@ -437,6 +437,7 @@ def nnObjFunction(params, *args):
     #print("Grad_w2: " + str(grad_w2))
 
     # Add the bias back on
+    # THIS WAS THE SOURCE OF ALL WASTED TIME
     '''bias = np.ones([np.shape(grad_w1)[0], 1])
     grad_w1 = np.append(grad_w1, bias, axis=1)
     #grad_w1 = np.concatenate([bias,grad_w1], axis=1) #to prepend to first column
@@ -558,7 +559,15 @@ if(RUNNING_TEST):
 
 """**************Neural Network Script Starts here********************************"""
 
+startTime = time.time()
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #
+#  To switch between the large dataset
+#  and the small dataset, comment out the
+#  proper line below!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #
 train_data, train_label, validation_data, validation_label, test_data, test_label = preprocess_small()
+#train_data, train_label, validation_data, validation_label, test_data, test_label = preprocess()
 
 #  Train Neural Network
 
@@ -626,3 +635,6 @@ predicted_label = nnPredict(w1, w2, test_data)
 
 print('\n Test set Accuracy:' + str(100 * np.mean((predicted_label == test_label).astype(float))) + '%')
 printToFile('\n Test set Accuracy:' + str(100 * np.mean((predicted_label == test_label).astype(float))) + '%')
+
+elapsedTime = time.time() - startTime
+print(elapsedTime)
