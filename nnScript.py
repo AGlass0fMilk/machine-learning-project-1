@@ -8,7 +8,7 @@ import time
 import datetime
 
 # This changes whether we're running test code or the actual neural network
-RUNNING_TEST = True
+RUNNING_TEST = False
 
 
 def initializeWeights(n_in, n_out):
@@ -345,7 +345,7 @@ def nnObjFunction(params, *args):
     # Now we can easily combine them all into J (easily... haha)
     # Should give us a vector of J for each training example
     Ji = -1 * np.sum((y*np.log(o)) + ((1-y)*np.log(1-o)), axis=1)
-    print(str(Ji))
+    #print(str(Ji))
     # And this will give us the whole sum, the objective function!
     J = (1/num_of_examples) * np.sum(Ji)
 
@@ -357,6 +357,9 @@ def nnObjFunction(params, *args):
     # Now we have to calculate the objective function gradient
     # 1.) Calcualte the derivative of Ji with respect to W2
     deltaL = o - y
+    #print(str(o))
+    #print(str(y))
+    #print(str(deltaL))
 
     #print(str(np.shape(deltaL)))   # (4996, 10)
     #print(str(np.shape(z)))        # (4996, 51)
@@ -364,8 +367,8 @@ def nnObjFunction(params, *args):
     #exit()
 
     # Remove bias term
-    z_no_bias = z[:,1:]    # shape = (4996, 50)
-    w2_no_bias = w2[:,1:]  # shape = (10, 50)
+    z_no_bias = z[:,:-1]    # shape = (4996, 50)
+    w2_no_bias = w2[:,:-1]  # shape = (10, 50)
     #w1_no_bias = w1[:,1:]  # shape = (50, 784)
 
     # Some really complicated looking numpy math below...
@@ -374,16 +377,16 @@ def nnObjFunction(params, *args):
     # Each page is a dJ/dW for the training example. The 3rd dimension represents each training example
 
     # Confirmed to be working correctly by George ("confirmed"...)
-    grad_w2 = np.zeros([num_of_examples, n_class, n_hidden]) #initialize empty output array
+    grad_w2 = np.zeros([num_of_examples, n_class, n_hidden+1]) #initialize empty output array
     for example in range(num_of_examples):
-        grad_w2[example] = (deltaL[example]*np.reshape(z_no_bias[example],[n_hidden, 1])).T
+        grad_w2[example] = (deltaL[example]*np.reshape(z[example],[n_hidden+1, 1])).T
 
     #print(str(np.shape(grad_w2))) #(4996, 10, 50)
 
     #2.) Calcualte the derivative of Ji with respect to W1
     # Output will need to be shape [Num_examples]X[Num_hidden]X[Num_Input]
     # In testing this shape will be (4996, 50, 784)
-    grad_w1 = np.zeros([num_of_examples, n_hidden, n_input])
+    grad_w1 = np.zeros([num_of_examples, n_hidden, n_input+1])
 
     # Should work but is VERY slow
     '''for example in range(num_of_examples):
@@ -394,16 +397,20 @@ def nnObjFunction(params, *args):
                     innerSum += deltaL[example, l] * w2[l, j]
                 grad_w1[example, j, p] = (1 - z_no_bias[example, j]) * z_no_bias[example, j] * innerSum * training_data[example, p]'''
 
+    # Append bias to training_data
+    bias = np.ones([np.shape(training_data)[0], 1])
+    x = np.append(training_data, bias, axis=1)
 
     # Seems to be correct
     for example in range(num_of_examples):
         innerSum = deltaL[example]*w2_no_bias.T
-        innerSum = np.sum(innerSum, axis=1)
-        zTimes = (1-z_no_bias[example])*z_no_bias[example]
-        #print(str(np.shape(training_data[example])))
-        #quit()
-        grad_w1[example] = (zTimes * innerSum * np.reshape(training_data[example],[n_input,1])).T
+        innerSum = np.sum(innerSum, axis=1) #(4,)
+        zTimes = (1-z_no_bias[example])*z_no_bias[example] #(4,)
+        #print(np.shape(zTimes))
+        grad_w1[example] = (zTimes * innerSum * np.reshape(x[example],[n_input+1,1])).T
 
+    #print(str(np.shape(w1)))
+    #print(str(np.shape(w2)))
     #print(str(np.shape(grad_w1))) #(4996, 50, 784)
     #print(str(np.shape(grad_w2))) #(4996, 10, 50)
     #print(str(grad_w1[0][0]))
@@ -422,11 +429,11 @@ def nnObjFunction(params, *args):
     #print("Grad_w2: " + str(grad_w2))
 
     # Add the bias back on
-    bias = np.ones([np.shape(grad_w1)[0], 1])
+    '''bias = np.ones([np.shape(grad_w1)[0], 1])
     grad_w1 = np.append(grad_w1, bias, axis=1)
     #grad_w1 = np.concatenate([bias,grad_w1], axis=1) #to prepend to first column
     bias = np.ones([np.shape(grad_w2)[0], 1])
-    grad_w2 = np.append(grad_w2, bias, axis=1)
+    grad_w2 = np.append(grad_w2, bias, axis=1)'''
     #grad_w2 = np.concatenate([bias,grad_w2], axis=1)
 
     #print(str(np.shape(grad_w1))) #(50, 785)
@@ -536,7 +543,7 @@ if(RUNNING_TEST):
 
     # Get output from nnObjFunction
     out = nnObjFunction(params, *args)
-    print(str(out[0]))
+    #print(str(out[0]))
     print(str(out[1]))
     exit()
 
