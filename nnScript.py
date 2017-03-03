@@ -353,6 +353,8 @@ def nnObjFunction(params, *args):
     regularization = np.sum((w1**2)) + np.sum((w2**2))
     regularization = (lambdaval/(2*num_of_examples)) * regularization
 
+    J = J + regularization
+
     #print(str(Ji))
     #print(str(np.shape(Ji)))
     #print("Objective Function Output: " + str(J))
