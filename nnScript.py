@@ -349,6 +349,10 @@ def nnObjFunction(params, *args):
     # And this will give us the whole sum, the objective function!
     J = (1/num_of_examples) * np.sum(Ji)
 
+    # Add regularization term
+    regularization = np.sum((w1**2)) + np.sum((w2**2))
+    regularization = (lambdaval/(2*num_of_examples)) * regularization
+
     #print(str(Ji))
     #print(str(np.shape(Ji)))
     print("Objective Function Output: " + str(J))
@@ -420,6 +424,10 @@ def nnObjFunction(params, *args):
     # This sums the gradients matrices for all training examples
     grad_w1 = np.sum(grad_w1, axis=0)
     grad_w2 = np.sum(grad_w2, axis=0)
+
+    # Add regularization
+    grad_w1 = grad_w1 + (lambdaval*w1)
+    grad_w2 = grad_w2 + (lambdaval*w2)
 
     # Multiply each by 1/number of examples
     grad_w1 = (1/num_of_examples)*grad_w1
@@ -577,7 +585,7 @@ initialWeights = np.concatenate((initial_w1.flatten(), initial_w2.flatten()), 0)
 #exit()
 
 # set the regularization hyper-parameter
-lambdaval = 0
+lambdaval = 1
 
 args = (n_input, n_hidden, n_class, train_data, train_label, lambdaval)
 
